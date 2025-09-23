@@ -21,13 +21,14 @@ var usageText = [
 	"  --jsondir        Directory (or file, if ending with .json) where the source document is copied to. Useful with --url.",
 	"  --pretty         Whether to use pretty json format. Use --no-pretty for false. Default True.",
 	"  --force, -f      If a destination file already exists, overwrite it.",
-	"  --help, -h       Show this help text."
+	"  --help, -h       Show this help text.",
+	"  --additionalProps   Can an object have additional (not explicitly described) properties."
 ].join('\n'),
 	minimist = require('minimist'),
 	argv = minimist(process.argv.slice(2),
 		{
-			boolean: ['pretty', 'force', 'stdin'],
-			default: {'pretty': true},
+			boolean: ['pretty', 'force', 'stdin', 'additionalProps'],
+			default: {'pretty': true, 'additionalProps': true },
 			alias: {'force': 'f', 'help': 'h', 'schemadir': 'o'},
 		});
 
@@ -123,6 +124,18 @@ function createConfig(argv) {
 	return config;
 }
 
+function createFileConfig(argv) {
+  var config = {}
+
+  for (arg in argv) {
+    if (arg === 'additionalProps') {
+      config.additionalProps = argv[arg]
+    }
+  }
+
+  return config;
+}
+
 /**
  * Get the name of the JSON resource so the schema
  * matches the source. The .json extension is added
@@ -140,6 +153,7 @@ function getName(str) {
 }
 
 var config = createConfig(argv);
+var fileConfig = createFileConfig(argv);
 
 // Cannot resolve without an input specification
 if (!config.src.type) {
@@ -158,7 +172,9 @@ handleInput(config.src, function(jsonString) {
 	handleOutput(config.copy, jsonString);
 	// Convert to schema
 	jsonParser.parse(jsonString)
-		.then(jsonToSchema)
+		.then(function(obj) {
+      return jsonToSchema(obj, fileConfig)
+    })
 		.then(jsonParser.stringify.bind(jsonParser))
 		.then(function(jsonSchemaString) {
 			// Save to dest
