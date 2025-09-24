@@ -58,40 +58,19 @@ Options:
   --stdin          Use stdin as input.                                              
   --url            Remote json document to use as input.                            
   --file           Local json document to use as input.                             
-  --schemadir, -o  Directory (or file, if ending with .json) where the schema will
-                   be stored.                                                       
-  --jsondir        Directory (or file, if ending with .json) where the source
-                   document is copied to. Useful with --url.                        
-  --pretty         Whether to use pretty json format. Use --no-pretty for false.
-                                                                     [default: true]
+  --schemadir, -o  Directory (or file, if ending with .json) where the schema will be stored.                                                       
+  --jsondir        Directory (or file, if ending with .json) where the source document is copied to. Useful with --url.                        
+  --pretty         Whether to use pretty json format. Use --no-pretty for false. [default: true]
   --force, -f      If a destination file already exists, overwrite it.              
-  --help, -h       Show this help text.                                             
-
+  --help, -h       Show this help text.
+  --strict, -s     Strict mode (adds a required fields and additionalProperties: false).                                     
 ```
 
 #### Example JSON
 ```json
 {
-    "title": "fresh fruit schema v1",
-    "type": "object",
-    "required": ["skin", "colors", "taste"],
-    "properties": {
-        "colors": {
-            "type": "array",
-            "minItems": 1,
-            "uniqueItems": true,
-            "items": {
-                "type": "string"
-            }
-        },
-        "skin": {
-            "type": "string"
-        },
-        "taste": {
-            "type": "number",
-            "minimum": 5
-        }
-    }
+  "title": "fresh fruit schema v1",
+  "colors": ["skin", "taste"]
 }
 ```
 
@@ -99,107 +78,23 @@ Options:
 #### Example Output
 ```json
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
-  "description": "",
   "type": "object",
   "properties": {
     "title": {
       "type": "string",
-      "minLength": 1
     },
-    "type": {
-      "type": "string",
-      "minLength": 1
-    },
-    "required": {
+    "colors": {
       "type": "array",
       "items": {
-        "required": [
-          
-        ],
-        "properties": {
-          
-        }
+          "type": "string"
       }
     },
-    "properties": {
-      "type": "object",
-      "properties": {
-        "colors": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string",
-              "minLength": 1
-            },
-            "minItems": {
-              "type": "number"
-            },
-            "uniqueItems": {
-              "type": "boolean"
-            },
-            "items": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "minLength": 1
-                }
-              },
-              "required": [
-                "type"
-              ]
-            }
-          },
-          "required": [
-            "type",
-            "minItems",
-            "uniqueItems",
-            "items"
-          ]
-        },
-        "skin": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": [
-            "type"
-          ]
-        },
-        "taste": {
-          "type": "object",
-          "properties": {
-            "type": {
-              "type": "string",
-              "minLength": 1
-            },
-            "minimum": {
-              "type": "number"
-            }
-          },
-          "required": [
-            "type",
-            "minimum"
-          ]
-        }
-      },
-      "required": [
-        "colors",
-        "skin",
-        "taste"
-      ]
-    }
   },
   "required": [
     "title",
-    "type",
-    "required",
-    "properties"
-  ]
+    "colors"
+  ],
+  "additionalProperties": false
 }
 ```
 

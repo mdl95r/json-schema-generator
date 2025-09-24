@@ -8,28 +8,29 @@ var url = require('url'),
 	errorHandler = cliConsole.errorHandler;
 
 var usageText = [
-	//"Extract a json-schema from a json document.",
-	"If <target> is specified, it is interpreted as follows: a protocol (like http://) ",
-	"means url; anything else is treated as path to a local file. ",
-	"If no input file is specified and stdin is provided, stdin is used.",
-	"",
-	"Options:",
-	"  --stdin          Use stdin as input.",
-	"  --url            Remote json document to use as input.",
-	"  --file           Local json document to use as input.",
-	"  --schemadir, -o  Directory (or file, if ending with .json) where the schema will be stored.",
-	"  --jsondir        Directory (or file, if ending with .json) where the source document is copied to. Useful with --url.",
-	"  --pretty         Whether to use pretty json format. Use --no-pretty for false. Default True.",
-	"  --force, -f      If a destination file already exists, overwrite it.",
-	"  --help, -h       Show this help text.",
-	"  --additionalProps   Can an object have additional (not explicitly described) properties."
+	`
+    If <target> is specified, it is interpreted as follows: a protocol (like http://),
+    means url; anything else is treated as path to a local file.,
+    If no input file is specified and stdin is provided, stdin is used.
+
+    Options:
+    --stdin          Use stdin as input.,
+    --url            Remote json document to use as input.,
+    --file           Local json document to use as input.,
+    --schemadir, -o  Directory (or file, if ending with .json) where the schema will be stored.,
+    --jsondir        Directory (or file, if ending with .json) where the source document is copied to. Useful with --url.,
+    --pretty         Whether to use pretty json format. Use --no-pretty for false. Default True.,
+    --force, -f      If a destination file already exists, overwrite it.,
+    --help, -h       Show this help text.,
+    --strict         Strict mode (adds a required fields and additionalProperties: false).
+  `
 ].join('\n'),
 	minimist = require('minimist'),
 	argv = minimist(process.argv.slice(2),
 		{
-			boolean: ['pretty', 'force', 'stdin', 'additionalProps'],
-			default: {'pretty': true, 'additionalProps': true },
-			alias: {'force': 'f', 'help': 'h', 'schemadir': 'o'},
+			boolean: ['pretty', 'force', 'stdin', 'strict'],
+			default: {'pretty': true, 'strict': false },
+			alias: {'force': 'f', 'help': 'h', 'schemadir': 'o', 'strict': 's'},
 		});
 
 /**
@@ -125,15 +126,11 @@ function createConfig(argv) {
 }
 
 function createFileConfig(argv) {
-  var config = {}
-
   for (arg in argv) {
-    if (arg === 'additionalProps') {
-      config.additionalProps = argv[arg]
+    if (arg === 'strict') {
+      return argv[arg]
     }
   }
-
-  return config;
 }
 
 /**
@@ -153,7 +150,7 @@ function getName(str) {
 }
 
 var config = createConfig(argv);
-var fileConfig = createFileConfig(argv);
+var isStrict = createFileConfig(argv);
 
 // Cannot resolve without an input specification
 if (!config.src.type) {
@@ -173,7 +170,7 @@ handleInput(config.src, function(jsonString) {
 	// Convert to schema
 	jsonParser.parse(jsonString)
 		.then(function(obj) {
-      return jsonToSchema(obj, fileConfig)
+      return jsonToSchema(obj, isStrict)
     })
 		.then(jsonParser.stringify.bind(jsonParser))
 		.then(function(jsonSchemaString) {
